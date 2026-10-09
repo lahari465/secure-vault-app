@@ -1,0 +1,42 @@
+// Every user-entered value is encrypted by the app (see lib/crypto.ts) before it
+// reaches the database. Only ids, owner, timestamps and sizes are stored in plain text.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Card {
+  id        String   @id @default(cuid())
+  userId    String // Clerk user id
+  secret    String // encrypted JSON: cardName, cardNumber, expiryDate, cvv, cardType
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, createdAt])
+}
+
+model Password {
+  id        String   @id @default(cuid())
+  userId    String
+  secret    String // encrypted JSON: website, username, password
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, createdAt])
+}
+
+model VaultFile {
+  id        String   @id @default(cuid())
+  userId    String
+  meta      String // encrypted JSON: fileName, fileType, description
+  content   Bytes // encrypted file bytes
+  size      Int // original size in bytes, used for quotas and display
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
